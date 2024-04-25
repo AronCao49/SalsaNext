@@ -61,7 +61,7 @@ def save_checkpoint(to_save, logdir, suffix=""):
 
 
 class Trainer():
-    def __init__(self, ARCH, DATA, datadir, logdir, path=None,uncertainty=False):
+    def __init__(self, ARCH, DATA, datadir, logdir, path=None, uncertainty=False):
         # parameters
         self.ARCH = ARCH
         self.DATA = DATA
@@ -112,12 +112,13 @@ class Trainer():
         content = torch.zeros(self.parser.get_n_classes(), dtype=torch.float)
         for cl, freq in DATA["content"].items():
             x_cl = self.parser.to_xentropy(cl)  # map actual class to xentropy class
-            content[x_cl] += freq
-        self.loss_w = 1 / (content + epsilon_w)  # get weights
-        for x_cl, w in enumerate(self.loss_w):  # ignore the ones necessary to ignore
-            if DATA["learning_ignore"][x_cl]:
-                # don't weigh
-                self.loss_w[x_cl] = 0
+            if x_cl != 255:
+                content[x_cl] += freq
+        self.loss_w = content / torch.sum(content) + epsilon_w   # get weights
+        # for x_cl, w in enumerate(self.loss_w):  # ignore the ones necessary to ignore
+        #     if DATA["learning_ignore"][x_cl]:
+        #         # don't weigh
+        #         self.loss_w[x_cl] = 0
         print("Loss weights from content: ", self.loss_w.data)
 
         with torch.no_grad():
@@ -150,8 +151,8 @@ class Trainer():
             self.n_gpus = torch.cuda.device_count()
 
 
-        self.criterion = nn.NLLLoss(weight=self.loss_w).to(self.device)
-        self.ls = Lovasz_softmax(ignore=0).to(self.device)
+        self.criterion = nn.NLLLoss(weight=self.loss_w, ignore_index=255).to(self.device)
+        self.ls = Lovasz_softmax(ignore=255).to(self.device)
         self.SoftmaxHeteroscedasticLoss = SoftmaxHeteroscedasticLoss().to(self.device)
         # loss as dataparallel too (more images in batch)
         if self.n_gpus > 1:
@@ -174,7 +175,7 @@ class Trainer():
                                   momentum=self.ARCH["train"]["momentum"],
                                   decay=final_decay)
 
-        if self.path is not None:
+        if self.path:
             torch.nn.Module.dump_patches = True
             w_dict = torch.load(path + "/SalsaNext",
                                 map_location=lambda storage, loc: storage)
@@ -246,11 +247,11 @@ class Trainer():
 
     def train(self):
 
-        self.ignore_class = []
-        for i, w in enumerate(self.loss_w):
-            if w < 1e-10:
-                self.ignore_class.append(i)
-                print("Ignoring class ", i, " in IoU evaluation")
+        self.ignore_class = [255]
+        # for i, w in enumerate(self.loss_w):
+        #     if w < 1e-10:
+        #         self.ignore_class.append(i)
+        #         print("Ignoring class ", i, " in IoU evaluation")
         self.evaluator = iouEval(self.parser.get_n_classes(),
                                  self.device, self.ignore_class)
 
@@ -328,14 +329,14 @@ class Trainer():
             print("*" * 80)
 
             # save to log
-            Trainer.save_to_log(logdir=self.log,
-                                logger=self.tb_logger,
-                                info=self.info,
-                                epoch=epoch,
-                                w_summary=self.ARCH["train"]["save_summary"],
-                                model=self.model_single,
-                                img_summary=self.ARCH["train"]["save_scans"],
-                                imgs=rand_img)
+            # Trainer.save_to_log(logdir=self.log,
+            #                     logger=self.tb_logger,
+            #                     info=self.info,
+            #                     epoch=epoch,
+            #                     w_summary=self.ARCH["train"]["save_summary"],
+            #                     model=self.model_single,
+            #                     img_summary=self.ARCH["train"]["save_scans"],
+            #                     imgs=rand_img)
 
         print('Finished Training')
 
@@ -496,6 +497,20 @@ class Trainer():
 
         return acc.avg, iou.avg, losses.avg, update_ratio_meter.avg,hetero_l.avg
 
+    def intersectionAndUnionGPU(output, target, K, ignore_index=255):
+        # 'K' classes, output and target sizes are N or N * L or N * H * W, each value in range 0 to K - 1.
+        assert (output.dim() in [1, 2, 3])
+        assert output.shape == target.shape
+        output = output.view(-1)
+        target = target.view(-1)
+        output[target == ignore_index] = ignore_index
+        intersection = output[output == target]
+        area_intersection = torch.histc(intersection, bins=K, min=0, max=K-1)
+        area_output = torch.histc(output, bins=K, min=0, max=K-1)
+        area_target = torch.histc(target, bins=K, min=0, max=K-1)
+        area_union = area_output + area_target - area_intersection
+        return area_intersection, area_union, area_target
+    
     def validate(self, val_loader, model, criterion, evaluator, class_func, color_fn, save_scans):
         losses = AverageMeter()
         jaccs = AverageMeter()

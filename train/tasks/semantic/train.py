@@ -62,7 +62,7 @@ if __name__ == '__main__':
         '--data_cfg', '-dc',
         type=str,
         required=False,
-        default='config/labels/semantic-kitti.yaml',
+        default='config/labels/mcd-ntu.yaml',
         help='Classification yaml cfg file. See /config/labels for sample. No default!',
     )
     parser.add_argument(
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     )
 
     FLAGS, unparsed = parser.parse_known_args()
-    FLAGS.log = FLAGS.log + '/logs/' + datetime.datetime.now().strftime("%Y-%-m-%d-%H:%M") + FLAGS.name
+    FLAGS.log = FLAGS.log + '/' + datetime.datetime.now().strftime("%Y-%-m-%d-%H:%M") + FLAGS.name
     if FLAGS.uncertainty:
         params = SalsaNextUncertainty(20)
         pytorch_total_params = sum(p.numel() for p in params.parameters() if p.requires_grad)
@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     # create log folder
     try:
-        if FLAGS.pretrained == "":
+        if not FLAGS.pretrained:
             FLAGS.pretrained = None
             if os.path.isdir(FLAGS.log):
                 if os.listdir(FLAGS.log):

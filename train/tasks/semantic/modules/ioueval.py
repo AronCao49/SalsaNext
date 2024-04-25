@@ -34,6 +34,11 @@ class iouEval:
             x = torch.from_numpy(np.array(x)).long().to(self.device)
         if isinstance(y, np.ndarray):
             y = torch.from_numpy(np.array(y)).long().to(self.device)
+            
+        if self.ignore is not None:
+            valid_mask = y != self.ignore.cuda()
+            x = x[valid_mask]
+            y = y[valid_mask]
 
         # sizes should be "batch_size x H x W"
         x_row = x.reshape(-1)  # de-batchify
@@ -58,8 +63,8 @@ class iouEval:
     def getStats(self):
         # remove fp and fn from confusion on the ignore classes cols and rows
         conf = self.conf_matrix.clone().double()
-        conf[self.ignore] = 0
-        conf[:, self.ignore] = 0
+        # conf[self.ignore] = 0
+        # conf[:, self.ignore] = 0
 
         # get the clean stats
         tp = conf.diag()

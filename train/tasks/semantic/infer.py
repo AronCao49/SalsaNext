@@ -103,25 +103,26 @@ if __name__ == '__main__':
 
     # create log folder
     try:
-        if os.path.isdir(FLAGS.log):
-            shutil.rmtree(FLAGS.log)
-        os.makedirs(FLAGS.log)
-        os.makedirs(os.path.join(FLAGS.log, "sequences"))
+        # if os.path.isdir(FLAGS.log):
+        #     shutil.rmtree(FLAGS.log)
+        FLAGS.log = os.path.join(FLAGS.log, 'logs')
+        os.makedirs(FLAGS.log, exist_ok=True)
+        os.makedirs(os.path.join(FLAGS.log, "sequences"), exist_ok=True)
         for seq in DATA["split"]["train"]:
-            seq = '{0:02d}'.format(int(seq))
+            seq = '{}'.format(seq)
             print("train", seq)
-            os.makedirs(os.path.join(FLAGS.log, "sequences", seq))
-            os.makedirs(os.path.join(FLAGS.log, "sequences", seq, "predictions"))
+            os.makedirs(os.path.join(FLAGS.log, "sequences", seq), exist_ok=True)
+            os.makedirs(os.path.join(FLAGS.log, "sequences", seq, "predictions"), exist_ok=True)
         for seq in DATA["split"]["valid"]:
-            seq = '{0:02d}'.format(int(seq))
+            seq = '{}'.format(seq)
             print("valid", seq)
-            os.makedirs(os.path.join(FLAGS.log, "sequences", seq))
-            os.makedirs(os.path.join(FLAGS.log, "sequences", seq, "predictions"))
+            os.makedirs(os.path.join(FLAGS.log, "sequences", seq), exist_ok=True)
+            os.makedirs(os.path.join(FLAGS.log, "sequences", seq, "predictions"), exist_ok=True)
         for seq in DATA["split"]["test"]:
-            seq = '{0:02d}'.format(int(seq))
+            seq = '{}'.format(seq)
             print("test", seq)
-            os.makedirs(os.path.join(FLAGS.log, "sequences", seq))
-            os.makedirs(os.path.join(FLAGS.log, "sequences", seq, "predictions"))
+            os.makedirs(os.path.join(FLAGS.log, "sequences", seq), exist_ok=True)
+            os.makedirs(os.path.join(FLAGS.log, "sequences", seq, "predictions"), exist_ok=True)
     except Exception as e:
         print(e)
         print("Error creating log directory. Check permissions!")
@@ -141,4 +142,4 @@ if __name__ == '__main__':
 
     # create user and infer dataset
     user = User(ARCH, DATA, FLAGS.dataset, FLAGS.log, FLAGS.model,FLAGS.split,FLAGS.uncertainty,FLAGS.monte_carlo)
-    user.infer()
+    user.infer_test()
