@@ -53,10 +53,6 @@ To train/eval you can use the following scripts:
    want to infer$eval only the validation and save the label prediction to ```/pred```:
      * ```./eval.sh -d /dataset -p /pred -m /salsanext/logs/[the desired run] -s validation -n salsanext```
      
-### Pretrained Model
-
-[SalsaNext](https://drive.google.com/file/d/1TbuF4EfLN1eoE2xtEAr_JzDqrtsOjGMp/view?usp=sharing)
-     
 ### Disclamer
 
 We based our code on [RangeNet++](https://github.com/PRBonn/lidar-bonnetal), please go show some support!
