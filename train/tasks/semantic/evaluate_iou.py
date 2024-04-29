@@ -24,9 +24,8 @@ def eval(test_sequences,splits,pred):
     # get scan paths
     scan_names = []
     for sequence in test_sequences:
-        sequence = '{0:02d}'.format(int(sequence))
-        scan_paths = os.path.join(FLAGS.dataset, "sequences",
-                                  str(sequence), "velodyne")
+        sequence = '{}'.format(sequence)
+        scan_paths = os.path.join(FLAGS.dataset, sequence, "bin")
         # populate the scan names
         seq_scan_names = [os.path.join(dp, f) for dp, dn, fn in os.walk(
             os.path.expanduser(scan_paths)) for f in fn if ".bin" in f]
@@ -37,9 +36,8 @@ def eval(test_sequences,splits,pred):
     # get label paths
     label_names = []
     for sequence in test_sequences:
-        sequence = '{0:02d}'.format(int(sequence))
-        label_paths = os.path.join(FLAGS.dataset, "sequences",
-                                   str(sequence), "labels")
+        sequence = '{}'.format(sequence)
+        label_paths = os.path.join(FLAGS.dataset, sequence, "labels")
         # populate the label names
         seq_label_names = [os.path.join(dp, f) for dp, dn, fn in os.walk(
             os.path.expanduser(label_paths)) for f in fn if ".label" in f]
@@ -50,7 +48,7 @@ def eval(test_sequences,splits,pred):
     # get predictions paths
     pred_names = []
     for sequence in test_sequences:
-        sequence = '{0:02d}'.format(int(sequence))
+        sequence = '{}'.format(sequence)
         pred_paths = os.path.join(FLAGS.predictions, "sequences",
                                   sequence, "predictions")
         # populate the label names
@@ -154,7 +152,7 @@ if __name__ == '__main__':
         '--data_cfg', '-dc',
         type=str,
         required=False,
-        default="config/labels/semantic-kitti.yaml",
+        default="config/labels/mcd-ntu.yaml",
         help='Dataset config file. Defaults to %(default)s',
     )
     parser.add_argument(

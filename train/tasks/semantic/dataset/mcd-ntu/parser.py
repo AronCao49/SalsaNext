@@ -81,8 +81,8 @@ class MCDNTU(Dataset):
       print("parsing seq {}".format(seq))
 
       # get paths for each
-      scan_path = os.path.join(self.root, seq, "inL_bin")
-      label_path = os.path.join(self.root, seq, "label")
+      scan_path = os.path.join(self.root, seq, "bin")
+      label_path = os.path.join(self.root, seq, "labels")
 
       # get files
       scan_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(

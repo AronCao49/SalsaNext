@@ -112,7 +112,7 @@ class Trainer():
         content = torch.zeros(self.parser.get_n_classes(), dtype=torch.float)
         for cl, freq in DATA["content"].items():
             x_cl = self.parser.to_xentropy(cl)  # map actual class to xentropy class
-            if x_cl != 255:
+            if x_cl != 255 and not DATA["learning_ignore"][x_cl]:
                 content[x_cl] += freq
         self.loss_w = content / torch.sum(content) + epsilon_w   # get weights
         # for x_cl, w in enumerate(self.loss_w):  # ignore the ones necessary to ignore
@@ -151,8 +151,8 @@ class Trainer():
             self.n_gpus = torch.cuda.device_count()
 
 
-        self.criterion = nn.NLLLoss(weight=self.loss_w, ignore_index=255).to(self.device)
-        self.ls = Lovasz_softmax(ignore=255).to(self.device)
+        self.criterion = nn.NLLLoss(weight=self.loss_w, ignore_index=24).to(self.device)
+        self.ls = Lovasz_softmax(ignore=24).to(self.device)
         self.SoftmaxHeteroscedasticLoss = SoftmaxHeteroscedasticLoss().to(self.device)
         # loss as dataparallel too (more images in batch)
         if self.n_gpus > 1:
@@ -247,7 +247,7 @@ class Trainer():
 
     def train(self):
 
-        self.ignore_class = [255]
+        self.ignore_class = [24]
         # for i, w in enumerate(self.loss_w):
         #     if w < 1e-10:
         #         self.ignore_class.append(i)

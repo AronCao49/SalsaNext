@@ -105,7 +105,7 @@ if __name__ == '__main__':
     try:
         # if os.path.isdir(FLAGS.log):
         #     shutil.rmtree(FLAGS.log)
-        FLAGS.log = os.path.join(FLAGS.log, 'logs')
+        FLAGS.log = os.path.join(FLAGS.log)
         os.makedirs(FLAGS.log, exist_ok=True)
         os.makedirs(os.path.join(FLAGS.log, "sequences"), exist_ok=True)
         for seq in DATA["split"]["train"]:

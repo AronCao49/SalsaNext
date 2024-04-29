@@ -38,6 +38,24 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
+def load_state(net, state_dict, strict=False):
+	if strict:
+		net.load_state_dict(state_dict=state_dict)
+	else:
+		# customized partially load function
+		net_state_keys = list(net.state_dict().keys())
+		for name, param in state_dict.items():
+			name_m = name if "module." in name else "module." + name
+			if name_m in net.state_dict().keys():
+				dst_param_shape = net.state_dict()[name_m].shape
+				if param.shape == dst_param_shape:
+					net.state_dict()[name_m].copy_(param.view(dst_param_shape))
+					net_state_keys.remove(name_m)
+		# indicating missed keys
+		if net_state_keys:
+			print(">> Failed to load: {}".format(net_state_keys))
+			return net
+	return net
 
 class User():
   def __init__(self, ARCH, DATA, datadir, logdir, modeldir,split,uncertainty,mc=30):
@@ -78,13 +96,13 @@ class User():
             self.model = nn.DataParallel(self.model)
             w_dict = torch.load(modeldir + "/SalsaNext",
                                 map_location=lambda storage, loc: storage)
-            self.model.load_state_dict(w_dict['state_dict'], strict=True)
+            self.model = load_state(self.model, w_dict['state_dict'])
         else:
             self.model = SalsaNext(self.parser.get_n_classes())
             self.model = nn.DataParallel(self.model)
             w_dict = torch.load(modeldir + "/SalsaNext",
                                 map_location=lambda storage, loc: storage)
-            self.model.load_state_dict(w_dict['state_dict'], strict=True)
+            self.model = load_state(self.model, w_dict['state_dict'])
 
     # use knn post processing?
     self.post = None
@@ -238,6 +256,7 @@ class User():
                 os.makedirs(os.path.join(self.logdir, "sequences",
                                          path_seq, "uncert"))
             proj_output.tofile(path)
+            print(path)
 
             print(total_time / total_frames)
         else:
@@ -291,6 +310,7 @@ class User():
             path = os.path.join(self.logdir, "sequences",
                                 path_seq, "predictions", path_name)
             pred_np.tofile(path)
+            print(path)
             
   def infer_test(self):
     cnn = []
@@ -421,14 +441,6 @@ class User():
         else:
             proj_output = self.model(proj_in)
             proj_argmax = proj_output[0].argmax(dim=0)
-            if torch.cuda.is_available():
-                torch.cuda.synchronize()
-            res = time.time() - end
-            print("Network seq", path_seq, "scan", path_name,
-                  "in", res, "sec")
-            end = time.time()
-            cnn.append(res)
-
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
             res = time.time() - end

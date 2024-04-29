@@ -39,7 +39,6 @@ To train/eval you can use the following scripts:
      ```
    * You can alter the training/testing split in the config ```train/tasks/semantic/config/labels/mcd-ntu.yaml```.
 <br>
-<br>
 
  * [Eval script](eval.sh) (you might need to chmod +x the file)
    * We have the following options:
@@ -49,10 +48,10 @@ To train/eval you can use the following scripts:
      * ``-s [String]``: Eval on Validation or Train (standard eval on both separately)
      * ```-u [String]```: If you want to infer using an Uncertainty model (default ```false```)
      * ```-c [Int]```: Number of MC sampling to do (default ```30```)
-   * If you want to infer&evaluate a model that you saved to ````/salsanext/logs/[the desired run]```` and you
-   want to infer$eval only the validation and save the label prediction to ```/pred```:
-     * ```./eval.sh -d /dataset -p /pred -m /salsanext/logs/[the desired run] -s validation -n salsanext```
-     
+   * We modified the given ```eval.sh``` to skip the offline predictions saving procedure and provide online evaluation results instead. To do so, you can simply run the following command:
+      ```
+      CUDA_VISIBLE_DEVICES=0 ./eval.sh -d /path/to/MCD/dataset -p logs -m /path/to/eval/checkpoint -s valid -c 30
+      ```
 ### Disclamer
 
 We based our code on [RangeNet++](https://github.com/PRBonn/lidar-bonnetal), please go show some support!

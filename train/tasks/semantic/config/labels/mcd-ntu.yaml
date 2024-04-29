@@ -107,7 +107,7 @@ learning_map:
   8 : 8
   9 : 9
   10: 10
-  11: 255
+  11: 24
   12: 11
   13: 12
   14: 13
@@ -151,47 +151,43 @@ learning_map_inv: # inverse of previous map
   21: 22
   22: 25
   23: 26
-  255: 11
+  24: 11
 
 learning_ignore: # Ignore classes
-  0: False     
-  1: False   
-  2: False     
-  3: False     
-  4: False     
-  5: False     
-  6: False     
-  7: False     
-  8: False     
-  9: False     
-  10: False    
-  11: True   
-  12: False    
-  13: False    
-  14: False    
-  15: False    
-  16: False    
-  17: False    
-  18: False    
-  19: False    
+  0 : False
+  1 : False
+  2 : False
+  3 : False
+  4 : False
+  5 : False
+  6 : False
+  7 : False
+  8 : False
+  9 : False
+  10: False
+  11: False
+  12: False
+  13: False
+  14: False
+  15: False
+  16: False
+  17: False
+  18: False
+  19: False
   20: False
   21: False
   22: False
   23: False
-  24: False
-  25: False
-  26: False
-  27: False
-  28: False
+  24: True
 split: # sequence numbers
   train:
     - 'ntu_day_01'
     - 'ntu_day_02'
     - 'ntu_night_13'
   valid:
-    # - 'ntu_day_10'
-    - 'tuhh_day_02'
+    - 'ntu_day_10'
+    # - 'tuhh_day_02'
   test:
-    # - 'ntu_day_10'
-    - 'tuhh_day_02'
+    - 'ntu_day_10'
+    # - 'tuhh_day_02'
 
